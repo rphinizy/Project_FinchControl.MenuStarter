@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using FinchAPI;
@@ -14,7 +15,7 @@ namespace Project_FinchControl
     // Application Type: Console
     // Author: Phinizy, Robin
     // Dated Created: 10/1/2020
-    // Last Modified: 10/4/2020
+    // Last Modified: 10/11/2020
     //
     // **************************************************
 
@@ -38,9 +39,12 @@ namespace Project_FinchControl
         /// </summary>
         static void SetTheme()
         {
+            Console.SetWindowSize(150, 40);
             Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.BackgroundColor = ConsoleColor.White;
+
+            Console.BackgroundColor = ConsoleColor.Gray;
         }
+
 
         /// <summary>
         /// *****************************************************************
@@ -363,6 +367,10 @@ namespace Project_FinchControl
         /// </summary>
         static void DataRecorderDisplayMenuScreen(Finch myFinch)
         {
+            int numberOfDataPoints = 0;
+            double dataPointFrequency = 0;
+            double[] temperatures= null;
+
             Console.CursorVisible = true;
 
             bool quitDataRecorder = false;
@@ -370,14 +378,17 @@ namespace Project_FinchControl
 
             do
             {
-                DisplayScreenHeader("Data Recorder");
-
-                Console.WriteLine("This module is still under development.");
+                DisplayScreenHeader("Data Recorder Menu");
                 Console.WriteLine();
+
                 //
                 // get user menu choice
                 //
-
+                Console.WriteLine("\ta) Number of Data Points");
+                Console.WriteLine("\tb) Frequency of Data Points");
+                Console.WriteLine("\tc) Get Data");
+                Console.WriteLine("\td) Show Data");
+                Console.WriteLine("\te) Manual Data Entry");
                 Console.WriteLine("\tq) Main Menu");
                 Console.Write("\t\tEnter Choice:");
                 menuChoice = Console.ReadLine().ToLower();
@@ -387,7 +398,26 @@ namespace Project_FinchControl
                 //
                 switch (menuChoice)
                 {
-                   
+                    case "a":
+                        numberOfDataPoints = DataRecorderDisplayGetNumberOfDataPoints();
+                        break;
+
+                    case "b":
+                        dataPointFrequency = DataRecorderDisplayGetDataPointFrequency();
+                        break;
+
+                    case "c":
+                        temperatures = DataRecorderDisplayGetData(numberOfDataPoints, dataPointFrequency, myFinch);
+                        break;
+
+                    case "d":
+                        DataRecorderDisplayData(temperatures);
+                        break;
+
+                    case "e":
+                        temperatures= DataRecorderManualGetData(numberOfDataPoints);
+                        break;
+
                     case "q":
                         quitDataRecorder = true;
                         break;
@@ -401,7 +431,321 @@ namespace Project_FinchControl
 
             } while (!quitDataRecorder);
         }
+        
 
+        /// <summary>
+        /// display table of collected temperature date to the user
+        /// </summary>
+        /// <param name="temperatures"></param>
+        static void DataRecorderDisplayData(double[] temperatures)
+        {
+            //
+            //validate is array contains values
+            if (temperatures != null)
+            {
+                DisplayScreenHeader("Show Data");
+
+                Console.WriteLine("\t Data in Celsius");
+                DataRecorderDisplayTable(temperatures);
+
+                Console.WriteLine();
+                Console.WriteLine();
+
+                Console.WriteLine("\t Data in Fahrenheit");
+                DataRecorderDisplayDataFarenheightConversionTable(temperatures);
+
+                DisplayContinuePrompt();
+            }
+            //
+            //if array contains no values: display error message
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\tERROR");
+                Console.WriteLine("\tPlease return to the Data Recorder Menu and collect data before continuing.");
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                DisplayContinuePrompt();
+            }
+        }
+
+        /// <summary>
+        /// create table from collected temperature data
+        /// </summary>
+        /// <param name="temperatures"></param>
+        static void DataRecorderDisplayTable(double[] temperatures)
+
+        {
+            double totalTempC=0;
+
+            //
+            //display table headers
+            //
+            Console.WriteLine(
+                "Recording #".PadLeft(15) +
+                "Temp".PadLeft(15)
+                );
+            Console.WriteLine(
+                 "------------".PadLeft(15) +
+                 "------------".PadLeft(15)
+                 );
+
+            //
+            // display table data
+            //
+            for (int index = 0; index < temperatures.Length; index++)
+            {
+                Console.WriteLine(
+                (index + 1).ToString().PadLeft(15) +
+                temperatures[index].ToString("n2").PadLeft(15)
+                );
+
+                totalTempC += temperatures[index];
+            }
+            Console.WriteLine("------------".PadLeft(30));
+            Console.WriteLine("Average TEMP".PadLeft(30));
+            Console.WriteLine("" + (totalTempC / (temperatures.Length)).ToString("n4").PadLeft(30));
+        }
+
+        /// <summary>
+        /// Convert sensor data to Fahrenheit and display in a table
+        /// </summary>
+        /// <param name="temperatures"></param>
+        static void DataRecorderDisplayDataFarenheightConversionTable(double[] temperatures)
+        {
+            double tempFahrenheit;
+            double totalTempF = 0;
+            //
+            //display table headers
+            //
+            Console.WriteLine(
+                "Recording #".PadLeft(15) +
+                "Temp".PadLeft(15)
+                );
+            Console.WriteLine(
+                 "------------".PadLeft(15) +
+                 "------------".PadLeft(15)
+                 );
+            //
+            // display table data
+            //
+            for (int index = 0; index < temperatures.Length; index++)
+            {
+                tempFahrenheit = ((9 * temperatures[index]) + (32 * 5)) / 5;
+                Console.WriteLine(
+                (index + 1).ToString().PadLeft(15) +
+                tempFahrenheit.ToString("n2").PadLeft(15)
+                );
+                totalTempF += tempFahrenheit;
+            }
+            Console.WriteLine("------------".PadLeft(30));
+            Console.WriteLine("Average TEMP".PadLeft(30));
+            Console.WriteLine("" + (totalTempF / (temperatures.Length)).ToString("n4").PadLeft(30));
+   
+        }
+
+        /// <summary>
+        /// collect data from finch temperature sensors
+        /// </summary>
+        /// <param name="numberOfDataPoints"></param>
+        /// <param name="dataPointFrequency"></param>
+        /// <param name="myFinch"></param>
+        /// <returns></returns>
+        static double[] DataRecorderDisplayGetData(int numberOfDataPoints, double dataPointFrequency, Finch myFinch)
+        {
+            double[] temperatures = new double[numberOfDataPoints];
+            double totalTemp=0;
+            DisplayScreenHeader("Get Data");
+
+            Console.WriteLine($"\tNumber of Data Points: {numberOfDataPoints}");
+            Console.WriteLine($"\tData Point Frequency: {dataPointFrequency}");
+            Console.WriteLine();
+            Console.WriteLine("\tThe Finch Robot is ready to begin recording the temperature data");
+            DisplayContinuePrompt();
+
+            //
+            //check to see if user entered data points and frequency
+            if (numberOfDataPoints > 0 && dataPointFrequency > 0)
+            {
+                for (int index = 0; index < numberOfDataPoints; index++)
+                {
+                    temperatures[index] = myFinch.getTemperature();
+                    Console.WriteLine($"Reading {index + 1}: {temperatures[index].ToString("n2")}");
+                    int waitInSeconds = (int)dataPointFrequency * 1000;
+                    myFinch.wait(waitInSeconds);
+                    totalTemp += temperatures[index];
+                }
+            
+                Array.Sort(temperatures);
+
+                //
+                //ask user to verify finch connection for temp reading 0
+                if (totalTemp == 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine();
+                    Console.WriteLine("\tERROR");
+                    Console.WriteLine("\tPlease return to the Menu and make sure Finch is connected.");
+                    Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    DisplayContinuePrompt();
+                    return temperatures;
+                }
+                    
+                else
+                {
+                    DisplayContinuePrompt();
+                    return temperatures;
+                }
+            }
+            //
+            // display error if no values for date poionts and frequency given.
+            else
+            {
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\tERROR");
+                Console.WriteLine();
+                Console.WriteLine("\tPlease return to the Menu and enter a valid number for Data Points and or Data Point Frequency");
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                DisplayContinuePrompt();
+                return temperatures;
+            }
+        }
+
+        /// <summary>
+        /// allows user to manually enter temperature data
+        /// </summary>
+        /// <param name="numberOfDataPoints"></param>
+        /// <returns></returns>
+        static double[] DataRecorderManualGetData(int numberOfDataPoints)
+        {
+            double[] temperatures = new double[numberOfDataPoints];
+
+            DisplayScreenHeader("Manual Data Entry");
+            Console.WriteLine();
+            Console.WriteLine($"\tNumber of Data Points required: {numberOfDataPoints}");
+            Console.WriteLine();
+
+            //
+            // validate user response for data points > than 0
+            if (numberOfDataPoints > 0)
+            {
+                Console.WriteLine();
+                Console.WriteLine("\tBegin recording manual temperature data");
+                DisplayContinuePrompt();
+
+                for (int index = 0; index < numberOfDataPoints; index++)
+                {
+                    Console.WriteLine($"Enter Data Point Number{index + 1}");
+                    double.TryParse(Console.ReadLine(), out temperatures[index]);
+                }
+                Array.Sort(temperatures);
+                DisplayContinuePrompt();
+                return temperatures;
+            }
+            //
+            // display error message if 0 data points
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\tERROR");
+                Console.WriteLine("\tPlease return to the main menu and enter a valid number for Data Points");
+                DisplayContinuePrompt();
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                return temperatures;
+            }
+
+        }
+
+        /// <summary>
+        /// get data point frequency from the user
+        /// </summary>
+        /// <returns> data point frequency </returns>
+        static double DataRecorderDisplayGetDataPointFrequency()
+        {
+            double dataPointFrequency;
+            string userResponse;
+
+            DisplayScreenHeader("Data Point Frequency");
+
+            askUserFrequency:
+            Console.WriteLine("\tPlease enter the required number of frequency of data points");
+
+            //
+            // Validate User Input
+            //
+            if (!double.TryParse(Console.ReadLine(), out dataPointFrequency))
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\tYour response is not valid.");
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                Console.WriteLine();
+                goto askUserFrequency;
+            }
+
+            else
+            {
+                Console.WriteLine();
+                Console.WriteLine($"\tYou have entered the number {dataPointFrequency} for your frequency of data points. Is this correct?");
+                userResponse = Console.ReadLine().ToLower();
+
+                if (userResponse == "yes" || userResponse == "y")
+                {
+                    DisplayContinuePrompt();
+                    return dataPointFrequency;
+                }
+                else
+                {
+                    goto askUserFrequency;
+                }
+            }
+        }
+
+        /// <summary>
+        /// get number of data points from the user
+        /// </summary>
+        /// <returns> number of data points </returns>
+        static int DataRecorderDisplayGetNumberOfDataPoints()
+        {
+            int numberOfDataPoints;
+            string userResponse;
+
+            DisplayScreenHeader("Number Of Data Points");
+           
+            askUserNumDataPoints:
+            Console.WriteLine("\tPlease enter the number of data points required");
+
+            //
+            // Validate User Input
+            //
+            if (!int.TryParse(Console.ReadLine(), out numberOfDataPoints))
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\tYour response is not valid.");
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                Console.WriteLine();
+                goto askUserNumDataPoints;
+            }
+            else
+            {
+                Console.WriteLine();
+                Console.WriteLine($"\tYou have entered the number {numberOfDataPoints} for your required data points. Is this correct?");
+                userResponse = Console.ReadLine().ToLower();
+
+                if (userResponse == "yes" || userResponse == "y")
+                {
+                    DisplayContinuePrompt();
+                    return numberOfDataPoints;
+                }
+                else
+                {
+                    goto askUserNumDataPoints;
+                }
+            }
+        }
+       
         #endregion
 
         #region ALARM SYSTEM
@@ -549,25 +893,24 @@ namespace Project_FinchControl
 
             robotConnected = finchRobot.connect();
 
-            // TODO test connection and provide user feedback - text, lights, sounds
+            // test connection and provide user feedback - text, lights, sounds
             while (robotConnected == true)
             {
                 //LIGHT FLASHING WHILE CONNECTING
                 for (int i = 0; i < 2; i++)
                 {
                     finchRobot.setLED(255, 0, 0);
-                    finchRobot.wait(1000);
+                    finchRobot.wait(100);
                     finchRobot.setLED(255, 150, 0);
-                    finchRobot.wait(1000);
+                    finchRobot.wait(100);
                     finchRobot.setLED(0, 255, 0);
-                    finchRobot.wait(1000);
+                    finchRobot.wait(100);
                 }
                 finchRobot.setLED(0, 255, 255);
                 finchRobot.wait(1000);
                 Console.Clear();
                 Console.WriteLine("\tCongratulations! Your Finch Robot is now Connected");
 
-                // Call Method to Play Music
                 PlayRickRollHello(finchRobot);
 
                 DisplayContinuePrompt();
@@ -734,30 +1077,37 @@ namespace Project_FinchControl
         /// Bonus Connected Music
         static void PlayRickRollHello(Finch finchRobot)
         {
+            finchRobot.setLED(255, 0, 0);
             finchRobot.noteOn(217);
             finchRobot.wait(200);
             finchRobot.noteOff();
 
+            finchRobot.setLED(0, 155, 255);
             finchRobot.noteOn(243);
             finchRobot.wait(200);
             finchRobot.noteOff();
 
+            finchRobot.setLED(255, 0, 255);
             finchRobot.noteOn(289);
             finchRobot.wait(200);
             finchRobot.noteOff();
 
+            finchRobot.setLED(255, 0, 0);
             finchRobot.noteOn(243);
             finchRobot.wait(200);
             finchRobot.noteOff();
 
+            finchRobot.setLED(255, 0, 0);
             finchRobot.noteOn(365);
             finchRobot.wait(400);
             finchRobot.noteOff();
 
+            finchRobot.setLED(0, 155, 255);
             finchRobot.noteOn(365);
             finchRobot.wait(200);
             finchRobot.noteOff();
 
+            finchRobot.setLED(255, 0, 255);
             finchRobot.noteOn(325);
             finchRobot.wait(900);
             finchRobot.noteOff();
