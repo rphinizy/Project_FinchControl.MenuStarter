@@ -7,10 +7,32 @@ using FinchAPI;
 using System.Threading;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
-using System.Data.SqlClient;
 
 namespace Project_FinchControl
 {
+
+    /// <summary>
+    /// User Commands
+    /// </summary>
+
+    public enum Command
+    {
+        NONE,
+        MOVEFORWARD,
+        MOVEBACKWARD,
+        STOPMOTORS,
+        WAIT,
+        TURNRIGHT,
+        TURNLEFT,
+        LEDON,
+        LEDOFF,
+        GETTEMPERATURE,
+        GETLIGHTVALUE,
+        LIGHTS,
+        SING,
+        DANCEPARTY,
+        DONE
+    }
 
     // **************************************************
     //
@@ -20,9 +42,11 @@ namespace Project_FinchControl
     // Application Type: Console
     // Author: Phinizy, Robin
     // Dated Created: 10/1/2020
-    // Last Modified: 10/18/2020
+    // Last Modified: 11/1/2020
     //
     // **************************************************
+
+    //public delegate void ThresholdValueTemp(int minMaxThresholdValueTemp);
 
     class Program
     {
@@ -46,8 +70,10 @@ namespace Project_FinchControl
         {
             Console.SetWindowSize(150, 40);
             Console.ForegroundColor = ConsoleColor.DarkBlue;
+
             Console.BackgroundColor = ConsoleColor.Gray;
         }
+
 
         /// <summary>
         /// *****************************************************************
@@ -126,7 +152,6 @@ namespace Project_FinchControl
         }
 
         #region TALENT SHOW
-
         /// <summary>
         /// *****************************************************************
         /// *                     TALENT SHOW MENU                          *
@@ -185,7 +210,6 @@ namespace Project_FinchControl
 
             } while (!quitTalentShowMenu);
         }
-
         /// <summary>
         /// *****************************************************************
         /// *               Talent Show > Light and Sound                   *
@@ -209,7 +233,11 @@ namespace Project_FinchControl
 
             DisplayMenuPrompt("Talent Show Menu");
         }
-
+        /// <summary>
+        /// ************************************************
+        /// *                DISPLAY DANCE                 *
+        /// ************************************************ 
+        /// </summary>
         static void DisplayDance(Finch finchRobot)
         {
             DisplayScreenHeader("Dance");
@@ -239,7 +267,7 @@ namespace Project_FinchControl
             }
             /// The Junior High Dance
             Console.WriteLine("\tDance: The Junior High");
-            for (int i = 0; i <10; i++)
+            for (int i = 0; i < 10; i++)
             {
                 finchRobot.setMotors(50, 0);
                 finchRobot.wait(1000);
@@ -253,7 +281,11 @@ namespace Project_FinchControl
             DisplayContinuePrompt();
             DisplayMenuPrompt("Talent Show Menu");
         }
-
+        /// <summary>
+        /// ************************************************
+        /// *                MIXING IT UP                  *
+        /// ************************************************ 
+        /// </summary>
         static void DisplayMixingItUp(Finch finchRobot)
         {
             DisplayScreenHeader("Mixing It Up");
@@ -261,6 +293,18 @@ namespace Project_FinchControl
             Console.WriteLine("The Finch robot will now Mix Things!");
             DisplayContinuePrompt();
 
+            BabySharkDanceParty(finchRobot);
+
+            DisplayContinuePrompt();
+            DisplayMenuPrompt("Talent Show Menu");
+        }
+        /// <summary>
+        /// ************************************************
+        /// *                DANCE PARTY                   *
+        /// ************************************************ 
+        /// </summary>
+        static void BabySharkDanceParty(Finch finchRobot)
+        {
             for (int i = 0; i < 3; i++)
             {
                 finchRobot.setMotors(50, 50);
@@ -353,9 +397,6 @@ namespace Project_FinchControl
             finchRobot.wait(200);
             finchRobot.noteOff();
             finchRobot.setMotors(0, 0);
-
-            DisplayContinuePrompt();
-            DisplayMenuPrompt("Talent Show Menu");
         }
 
 
@@ -372,7 +413,7 @@ namespace Project_FinchControl
         {
             int numberOfDataPoints = 0;
             double dataPointFrequency = 0;
-            double[] temperatures= null;
+            double[] temperatures = null;
 
             Console.CursorVisible = true;
 
@@ -418,7 +459,7 @@ namespace Project_FinchControl
                         break;
 
                     case "e":
-                        temperatures= DataRecorderManualGetData(numberOfDataPoints);
+                        temperatures = DataRecorderManualGetData(numberOfDataPoints);
                         break;
 
                     case "q":
@@ -434,7 +475,7 @@ namespace Project_FinchControl
 
             } while (!quitDataRecorder);
         }
-        
+
 
         /// <summary>
         /// display table of collected temperature date to the user
@@ -478,7 +519,7 @@ namespace Project_FinchControl
         static void DataRecorderDisplayTable(double[] temperatures)
 
         {
-            double totalTempC=0;
+            double totalTempC = 0;
 
             //
             //display table headers
@@ -543,7 +584,7 @@ namespace Project_FinchControl
             Console.WriteLine("------------".PadLeft(30));
             Console.WriteLine("Average TEMP".PadLeft(30));
             Console.WriteLine("" + (totalTempF / (temperatures.Length)).ToString("n4").PadLeft(30));
-   
+
         }
 
         ///// <summary>
@@ -556,7 +597,7 @@ namespace Project_FinchControl
         static double[] DataRecorderDisplayGetData(int numberOfDataPoints, double dataPointFrequency, Finch myFinch)
         {
             double[] temperatures = new double[numberOfDataPoints];
-            double totalTemp=0;
+            double totalTemp = 0;
             DisplayScreenHeader("Get Data");
 
             Console.WriteLine($"\tNumber of Data Points: {numberOfDataPoints}");
@@ -577,7 +618,7 @@ namespace Project_FinchControl
                     myFinch.wait(waitInSeconds);
                     totalTemp += temperatures[index];
                 }
-            
+
                 Array.Sort(temperatures);
 
                 //
@@ -592,7 +633,7 @@ namespace Project_FinchControl
                     DisplayContinuePrompt();
                     return temperatures;
                 }
-                    
+
                 else
                 {
                     DisplayContinuePrompt();
@@ -671,7 +712,7 @@ namespace Project_FinchControl
 
             DisplayScreenHeader("Data Point Frequency");
 
-            askUserFrequency:
+        askUserFrequency:
             Console.WriteLine("\tPlease enter the required number of frequency of data points");
 
             //
@@ -715,8 +756,8 @@ namespace Project_FinchControl
             string userResponse;
 
             DisplayScreenHeader("Number Of Data Points");
-           
-            askUserNumDataPoints:
+
+        askUserNumDataPoints:
             Console.WriteLine("\tPlease enter the number of data points required");
 
             //
@@ -748,7 +789,7 @@ namespace Project_FinchControl
                 }
             }
         }
-       
+
         #endregion
 
         #region ALARM SYSTEM
@@ -769,6 +810,7 @@ namespace Project_FinchControl
             string rangeType = "";
             int minMaxThresholdValue = 0;
             int timeToMonitor = 0;
+            int minMaxThresholdValueTemp = 0;
 
             do
             {
@@ -801,7 +843,29 @@ namespace Project_FinchControl
                         break;
 
                     case "c":
-                        minMaxThresholdValue = LightAlarmDisplaySetThresholdValue(rangeType, myFinch);
+                        //
+                        //if user selected a light monitoring mode: get light threshold value
+                        if (sensorsToMonitor == "left" || sensorsToMonitor == "right" || sensorsToMonitor == "both" || sensorsToMonitor == "all")
+                        {
+                            minMaxThresholdValue = LightAlarmDisplaySetThresholdValue(rangeType, myFinch, sensorsToMonitor, minMaxThresholdValueTemp);
+                        }
+                        //
+                        //if user selected a temperatue monitoring mode: get temp threshold value
+                        if (sensorsToMonitor == "temp" || sensorsToMonitor == "all")
+                        {
+                            minMaxThresholdValueTemp = TempAlarmDisplaySetThresholdValue(rangeType, myFinch, minMaxThresholdValueTemp);
+                        }
+                        //
+                        //send user back to menu to select sensors to monitor
+                        if (sensorsToMonitor == "")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine();
+                            Console.WriteLine("\tPlease Select a sensor to monitor before continuing");
+                            Console.WriteLine();
+                            Console.ForegroundColor = ConsoleColor.DarkBlue;
+                            DisplayMenuPrompt("Alarm System");
+                        }
                         break;
 
                     case "d":
@@ -809,7 +873,7 @@ namespace Project_FinchControl
                         break;
 
                     case "e":
-                        LightAlarmSetAlarm(myFinch, sensorsToMonitor, rangeType, minMaxThresholdValue, timeToMonitor);
+                        LightAlarmSetAlarm(myFinch, sensorsToMonitor, rangeType, minMaxThresholdValue, timeToMonitor, minMaxThresholdValueTemp);
                         break;
 
                     case "q":
@@ -825,54 +889,89 @@ namespace Project_FinchControl
 
             } while (!quitAlarmSystem);
         }
-
+        /// <summary>
+        /// ************************************************
+        /// *                  SET SENSORS                 *
+        /// ************************************************  
+        /// </summary>
+        /// <returns></returns>
         static string LightAlarmDisplaySetSensorsToMonitor()
         {
             string sensorsToMonitor;
 
             DisplayScreenHeader("\tSensors to Monitor");
 
-            Console.WriteLine("\tSensors to Monitor [left, right, both]:");
+            Console.WriteLine("\tSensors to Monitor [left, right, both, temp, all]:");
+            sensorsToMonitor = Console.ReadLine().ToLower();
 
             //
-            //
             //validate user input for correct value
-            do
+            if (sensorsToMonitor != "left" && sensorsToMonitor != "right" && sensorsToMonitor != "both" && sensorsToMonitor != "temp" && sensorsToMonitor != "all")
             {
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("\tPlease Enter a Valid Response");
-                Console.WriteLine();
+                Console.Write("\tYour response");
                 Console.ForegroundColor = ConsoleColor.DarkBlue;
-                sensorsToMonitor = Console.ReadLine().ToLower();
-            } while (sensorsToMonitor != "left" && sensorsToMonitor != "right" && sensorsToMonitor != "both");
-
+                Console.Write(" " + sensorsToMonitor + " ");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("is not valid");
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                Console.WriteLine("\n");
+                Console.WriteLine("\tPress any key to continue");
+                Console.ReadKey();
+                LightAlarmDisplaySetSensorsToMonitor();
+            }
             //
             //echo user input value
-             Console.WriteLine("\tSensors to Monitor: "+sensorsToMonitor);
-             DisplayMenuPrompt("Alarm System");
+            else
+            {
+                Console.WriteLine("\tSensors to Monitor: " + sensorsToMonitor);
+                DisplayMenuPrompt("Alarm System");
+            }
 
             return sensorsToMonitor;
-        }
 
+        }
+        /// <summary>
+        /// ************************************************
+        /// *                 SET RANGE TYPE               *
+        /// ************************************************  
+        /// </summary>
+        /// <returns></returns>
         static string LightAlarmDisplaySetRangeType()
         {
-            string rangeType="";
+            string rangeType;
+            bool firstLoop = true;
 
             DisplayScreenHeader("\tRange Type");
             Console.WriteLine();
-            Console.WriteLine("\tRange Type [minimum, maximum]:");
+
             //
             //
             //validate user input for correct value
             do
             {
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("\tPlease Enter a Valid Response");
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.DarkBlue;
-                rangeType = Console.ReadLine().ToLower();
+                //
+                //mesage for first loop only. 
+                if (firstLoop == true)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("\t Enter Range Type [minimum, maximum]:");
+                    rangeType = Console.ReadLine().ToLower();
+                    firstLoop = false;
+                }
+
+                //
+                // message for invalid user response
+                else
+                {
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("\tPlease Enter a Valid Response");
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    rangeType = Console.ReadLine().ToLower();
+                }
 
             } while (rangeType != "minimum" && rangeType != "maximum");
 
@@ -880,85 +979,363 @@ namespace Project_FinchControl
             //echo user input value
             Console.WriteLine("\tRange Type: " + rangeType);
             DisplayMenuPrompt("Alarm System");
+
             return rangeType;
         }
-      
-        static int LightAlarmDisplaySetThresholdValue(string rangeType, Finch myFinch)
+        /// <summary>
+        /// ************************************************
+        /// *                SET THRESHOLD TEMP           *
+        /// ************************************************ 
+        /// </summary>
+        /// <returns></returns>
+        static int TempAlarmDisplaySetThresholdValue(string rangeType, Finch myFinch, int minMaxThresholdValueTemp)
         {
-            int minMaxThresholdValue;
 
-            DisplayScreenHeader("Minimum/Maximum Threshold Value");
-            Console.WriteLine($"\tLeft light sensor ambient value: {myFinch.getLeftLightSensor()}");
-            Console.WriteLine($"\tRight light sensor ambient value: {myFinch.getRightLightSensor()}");
+            bool firstLoop = true;
+
+            DisplayScreenHeader("Minimum/Maximum Temp Threshold Value");
             Console.WriteLine();
-            Console.WriteLine($"\tEnter the {rangeType} light sensor threshold value:");
-            Console.WriteLine();
-                //
-                //
-                //validate user input for correct value
+            Console.WriteLine($"\tTemperature sensor ambient value: {myFinch.getTemperature()}");
+
+            //
+            //
+            //validate user input for correct value
             do
+            {
+                //
+                //mesage for first loop only. 
+                if (firstLoop == true)
+                {
+                    Console.WriteLine($"\tEnter the {rangeType} temperature threshold value:");
+                    firstLoop = false;
+                }
+
+                //
+                // message for invalid user response
+                else
                 {
                     Console.WriteLine();
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("\tPlease Enter a Valid Response");
                     Console.WriteLine();
                     Console.ForegroundColor = ConsoleColor.DarkBlue;
+                }
+
+            } while (!int.TryParse(Console.ReadLine(), out minMaxThresholdValueTemp));
+
+            //
+            //echo user input value
+            Console.WriteLine("\tTemperature threshold value: " + minMaxThresholdValueTemp);
+            DisplayMenuPrompt("Alarm System");
+
+            return minMaxThresholdValueTemp;
+        }
+        /// <summary>
+        /// ************************************************
+        /// *              SET THRESHOLD LIGHT             *
+        /// ************************************************ 
+        /// </summary>
+        /// <returns></returns>
+        static int LightAlarmDisplaySetThresholdValue(string rangeType, Finch myFinch, string sensorsToMonitor, int minMaxThresholdValueTemp)
+        {
+            int minMaxThresholdValue = 0;
+            bool firstLoop = true;
+
+            DisplayScreenHeader("Minimum/Maximum Threshold Value");
+
+
+            if (sensorsToMonitor == "left" || sensorsToMonitor == "right" || sensorsToMonitor == "both" || sensorsToMonitor == "all")
+            {
+                Console.WriteLine($"\tLeft light sensor ambient value: {myFinch.getLeftLightSensor()}");
+                Console.WriteLine($"\tRight light sensor ambient value: {myFinch.getRightLightSensor()}");
+                Console.WriteLine();
+                //
+                //
+                //validate user input for correct value
+                do
+                {
+                    //
+                    //mesage for first loop only. 
+                    if (firstLoop == true)
+                    {
+                        Console.WriteLine($"Enter the {rangeType} light sensor threshold value:");
+                        firstLoop = false;
+                    }
+
+                    //
+                    // message for invalid user response
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("\tPlease Enter a Valid Response");
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
 
                 } while (!int.TryParse(Console.ReadLine(), out minMaxThresholdValue));
-                
-             //
-             //echo user input value
-             Console.WriteLine("\t" + rangeType + " Threshold Value: " + minMaxThresholdValue);
-             DisplayMenuPrompt("Alarm System");
-             return minMaxThresholdValue;
-        }
 
+                //
+                //echo user input value
+                Console.WriteLine("\t" + rangeType + " Threshold Value: " + minMaxThresholdValue);
+
+            }
+            //
+            // prevent menu prompt from running twice if user chooses the temperature options
+            if (sensorsToMonitor == "left" || sensorsToMonitor == "right" || sensorsToMonitor == "both")
+            {
+                DisplayMenuPrompt("Alarm System");
+            }
+
+            return minMaxThresholdValue;
+        }
+        /// <summary>
+        /// ************************************************
+        /// *             SET TIME TO MONITOR              *
+        /// ************************************************  
+        /// </summary>
+        /// <returns></returns>
         static int LightAlarmDisplaySetTimetoMonitor()
         {
             int timeToMonitor;
 
             DisplayScreenHeader("Time to Monitor");
 
-            Console.WriteLine();
             Console.WriteLine($"\tEnter the time to monitor (in seconds):");
             //
             //validate user input for correct value
-            //
-            do
+            if (!int.TryParse(Console.ReadLine(), out timeToMonitor))
             {
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("\tPlease Enter a Valid Response");
-                Console.WriteLine();
+                Console.Write("\tYour response is not valid");
                 Console.ForegroundColor = ConsoleColor.DarkBlue;
-            
-            } while (!int.TryParse(Console.ReadLine(), out timeToMonitor));
-          
+                Console.WriteLine("\n");
+                Console.WriteLine("\tPress any key to continue");
+                Console.ReadKey();
+                LightAlarmDisplaySetTimetoMonitor();
+            }
             //
             //echo user input value
-         
-            Console.WriteLine("\tTime to Monitor: " + timeToMonitor);
-            DisplayMenuPrompt("Alarm System");
+            else
+            {
+                Console.WriteLine("\tTime to Monitor: " + timeToMonitor);
+                DisplayMenuPrompt("Alarm System");
+            }
+
             return timeToMonitor;
         }
+        /// <summary>
+        /// ************************************************
+        /// *                RUN ALARM                     *
+        /// ************************************************ 
+        /// </summary>
+        static void LightAlarmRunAlarm(Finch myFinch,
+            string sensorsToMonitor,
+            string rangeType,
+            int minMaxThresholdValue,
+            int timeToMonitor,
+            int minMaxThresholdValueTemp)
+        {
+            //
+            //run alarm program with user parameters
 
+            bool thresholdExceeded = false;
+            bool tempThresholdExceeded = false;
+            int secondsElasped = 0;
+            int currentLightSensorValue = 0;
+            double currentTempSensorValue = 0;
+
+            while (secondsElasped < timeToMonitor && !thresholdExceeded || !tempThresholdExceeded)
+            {
+                switch (sensorsToMonitor)
+                {
+                    case "left":
+                        currentLightSensorValue = myFinch.getLeftLightSensor();
+                        break;
+
+                    case "right":
+                        currentLightSensorValue = myFinch.getRightLightSensor();
+                        break;
+
+                    case "both":
+                        currentLightSensorValue = (myFinch.getRightLightSensor() + myFinch.getLeftLightSensor()) / 2;
+                        break;
+
+                    case "temp":
+                        currentTempSensorValue = myFinch.getTemperature();
+                        break;
+
+                    case "all":
+                        currentLightSensorValue = (myFinch.getRightLightSensor() + myFinch.getLeftLightSensor()) / 2;
+                        currentTempSensorValue = myFinch.getTemperature();
+
+                        break;
+                }
+                switch (rangeType)
+                {
+                    case "minimum":
+                        if (currentLightSensorValue < minMaxThresholdValue)
+                        {
+                            thresholdExceeded = true;
+                        }
+                        if (currentTempSensorValue < minMaxThresholdValueTemp)
+                        {
+                            tempThresholdExceeded = true;
+                        }
+                        break;
+
+                    case "maximim":
+                        if (currentLightSensorValue > minMaxThresholdValue)
+                        {
+                            thresholdExceeded = true;
+                        }
+                        if (currentTempSensorValue > minMaxThresholdValueTemp)
+                        {
+                            tempThresholdExceeded = true;
+                        }
+                        break;
+
+                }
+
+                if (sensorsToMonitor == "left" || sensorsToMonitor == "right" || sensorsToMonitor == "both")
+                {
+                    Console.SetCursorPosition(10, 10);
+                    Console.WriteLine("Time Elasped: " + secondsElasped);
+                    Console.SetCursorPosition(10, 11);
+                    Console.WriteLine("Light Value: " + currentLightSensorValue);
+                    myFinch.wait(1000);
+                    secondsElasped++;
+                }
+
+                if (sensorsToMonitor == "all")
+                {
+                    Console.SetCursorPosition(10, 10);
+                    Console.WriteLine("Time Elasped: " + secondsElasped);
+                    Console.SetCursorPosition(10, 11);
+                    Console.WriteLine("Light Value: " + currentLightSensorValue);
+                    Console.SetCursorPosition(10, 12);
+                    Console.WriteLine("Temp Value: " + currentTempSensorValue);
+                    myFinch.wait(1000);
+                    secondsElasped++;
+                }
+
+                if (sensorsToMonitor == "temp")
+                {
+                    Console.SetCursorPosition(10, 10);
+                    Console.WriteLine("Time Elasped: " + secondsElasped);
+                    Console.SetCursorPosition(10, 11);
+                    Console.WriteLine("Temp Value: " + currentTempSensorValue);
+                    myFinch.wait(1000);
+                    secondsElasped++;
+                }
+            }
+
+            if (thresholdExceeded == true || tempThresholdExceeded == true)
+            {
+                //display sensor reading that triggered alarm.
+
+                if (thresholdExceeded == true)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.SetCursorPosition(10, 14);
+                    Console.WriteLine("\tTripped Light Value: " + currentLightSensorValue);
+                    Console.ForegroundColor = ConsoleColor.DarkBlue;
+                }
+                if (tempThresholdExceeded == true)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.SetCursorPosition(10, 15);
+                    Console.WriteLine("\tTripped Temp Value: " + currentTempSensorValue);
+                    Console.ForegroundColor = ConsoleColor.DarkBlue;
+                }
+
+                for (int i = 0; i < 5; i++)
+                {
+
+                    Console.SetCursorPosition(0, 17);
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\t\t<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>");
+                    Console.WriteLine("\t\t*                                                          *");
+                    Console.WriteLine("\t\t*                - -                   - -                 *");
+                    Console.WriteLine("\t\t*              -  !  -     ALARM     -  !  -               *");
+                    Console.WriteLine("\t\t*                - -                   - -                 *");
+                    Console.WriteLine("\t\t*                                                          *");
+                    Console.WriteLine("\t\t<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>");
+                    Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    Console.WriteLine();
+                    Console.WriteLine();
+
+                    //
+                    // display which sensor exceeded threshold to trip alarm.
+                    if (thresholdExceeded == true)
+                    {
+                        Console.WriteLine($"\tThe {rangeType}  light threshold value of {minMaxThresholdValue} was exceeded");
+                        Console.WriteLine();
+                    }
+                    if (tempThresholdExceeded == true)
+                    {
+                        Console.WriteLine($"\tThe {rangeType}  temperature threshold value of {minMaxThresholdValueTemp} was exceeded");
+                        Console.WriteLine();
+                    }
+
+                    Console.Beep(900, 700);
+                    Console.SetCursorPosition(0, 17);
+                    Console.WriteLine("\t\t<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>");
+                    Console.WriteLine("\t\t*                                                          *");
+                    Console.WriteLine("\t\t*                - -                   - -                 *");
+                    Console.WriteLine("\t\t*              -  !  -    WARNING    -  !  -               *");
+                    Console.WriteLine("\t\t*                - -                   - -                 *");
+                    Console.WriteLine("\t\t*                                                          *");
+                    Console.WriteLine("\t\t<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>");
+                    Console.Beep(300, 700);
+
+                }
+            }
+            else
+            {
+                if (sensorsToMonitor == "left" || sensorsToMonitor == "right" || sensorsToMonitor == "both" || sensorsToMonitor == "all")
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"\tThe {rangeType} light threshold value of {minMaxThresholdValue} was not exceeded");
+                    Console.WriteLine();
+                }
+
+                if (sensorsToMonitor == "temp" || sensorsToMonitor == "all")
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"\tThe {rangeType} temperature threshold value of {minMaxThresholdValueTemp} was not exceeded");
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("\n");
+                Console.WriteLine("\n");
+                DisplayMenuPrompt("Alarm System");
+            }
+        }
+        /// <summary>
+        /// ************************************************
+        /// *                SET ALARM                     *
+        /// ************************************************ 
+        /// </summary>
         static void LightAlarmSetAlarm(Finch myFinch,
             string sensorsToMonitor,
             string rangeType,
             int minMaxThresholdValue,
-            int timeToMonitor
-            )
+            int timeToMonitor,
+            int minMaxThresholdValueTemp
+           )
         {
-            bool thresholdExceeded = false;
-            int secondsElasped = 0;
-            int currentLightSensorValue = 0;
-         
+            bool allValuesTemp = false;
+            bool allValuesAll = false;
+            bool allValuesLight = false;
+
 
             DisplayScreenHeader("Set Alarm");
 
             Console.WriteLine($"Sensor to monitor: {sensorsToMonitor}");
             Console.WriteLine("Range Type: {0}", rangeType);
-            Console.WriteLine("Min/Max threshold values: Light "+ minMaxThresholdValue);
+            Console.WriteLine("Min/Max threshold values: Light(" + minMaxThresholdValue + "), Temperature(" + minMaxThresholdValueTemp + ")");
             Console.WriteLine($"Time to monitor: {timeToMonitor}");
             Console.WriteLine();
 
@@ -966,17 +1343,52 @@ namespace Project_FinchControl
             Console.ReadKey();
             Console.WriteLine();
 
+
+            // **********************************************************
+            //           USER SENSORS TO MONITOR LOGIC BLOCK            *
+            // **********************************************************
+            //validate the user has entered all required settings for the alarm.
             //
-            // validate the user has entered all required settings for the alarm.
-            if(sensorsToMonitor == "" || rangeType == "" || minMaxThresholdValue == 0 || timeToMonitor == 0)
-            {   
+            //
+            //
+            //Check for all variables required for "TEMP"
+            if (sensorsToMonitor == "temp" && rangeType != "" && timeToMonitor != default && minMaxThresholdValueTemp != default)
+            {
+                allValuesTemp = true;
+                LightAlarmRunAlarm(myFinch, sensorsToMonitor, rangeType, minMaxThresholdValue, timeToMonitor, minMaxThresholdValueTemp);
+            }
+            //
+            //
+            //Check for all variables required for "ALL"
+            if (sensorsToMonitor == "all" && rangeType != "" && timeToMonitor != default && minMaxThresholdValueTemp != default && minMaxThresholdValue != default)
+            {
+                allValuesAll = true;
+                LightAlarmRunAlarm(myFinch, sensorsToMonitor, rangeType, minMaxThresholdValue, timeToMonitor, minMaxThresholdValueTemp);
+            }
+            //
+            //
+            //Check for all variables required for "LEFT" , "RIGHT", or "BOTH"
+            if (sensorsToMonitor == "left" || sensorsToMonitor == "right" || sensorsToMonitor == "both")
+            {
+                if (rangeType != "" && timeToMonitor != default && minMaxThresholdValue != default)
+                {
+                    allValuesLight = true;
+                    LightAlarmRunAlarm(myFinch, sensorsToMonitor, rangeType, minMaxThresholdValue, timeToMonitor, minMaxThresholdValueTemp);
+                }
+            }
+
+            //
+            //
+            // If all user input values missing
+            if (sensorsToMonitor == "" && rangeType == "" && minMaxThresholdValue == default && timeToMonitor == default && minMaxThresholdValueTemp == default)
+            {
                 Console.WriteLine();
                 Console.WriteLine("\tPlease enter ALL required values to set your alarm");
                 Console.WriteLine();
                 Console.SetCursorPosition(0, 13);
                 Console.WriteLine("\t\tSelected Sensors: " + sensorsToMonitor);
                 Console.WriteLine("\t\tRange Type: " + rangeType);
-                Console.WriteLine("\t\tMin/Max threshold values: Light " + minMaxThresholdValue);
+                Console.WriteLine("\t\tSensor Threshold: Light(" + minMaxThresholdValue + "), Temperature(" + minMaxThresholdValueTemp + ")");
                 Console.WriteLine("\t\tTime to Monitor: " + timeToMonitor);
                 Console.WriteLine();
 
@@ -998,11 +1410,11 @@ namespace Project_FinchControl
                     Console.ForegroundColor = ConsoleColor.DarkBlue;
                 }
 
-                if(minMaxThresholdValue == 0)
+                if (minMaxThresholdValue == default && minMaxThresholdValueTemp == default)
                 {
                     Console.SetCursorPosition(0, 15);
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("\t\tMin/Max threshold values: Light " + minMaxThresholdValue);
+                    Console.WriteLine("\t\tSensor Threshold: Light(" + minMaxThresholdValue + "), Temperature(" + minMaxThresholdValueTemp + ")");
                     Console.ForegroundColor = ConsoleColor.DarkBlue;
                 }
                 if (timeToMonitor == 0)
@@ -1017,94 +1429,182 @@ namespace Project_FinchControl
                 DisplayMenuPrompt("Alarm System");
 
             }
+
             //
-            //run alarm program with user parameters
-            else
+            //
+            //if user seleced "TEMP" and is missing input values
+            if (sensorsToMonitor == "temp" && allValuesTemp == false)
             {
-                while (secondsElasped < timeToMonitor && !thresholdExceeded)
+
+                if (rangeType == "" || timeToMonitor == default || minMaxThresholdValueTemp == default)
                 {
-                    switch (sensorsToMonitor)
+
+                    Console.WriteLine();
+                    Console.WriteLine("\tPlease enter ALL required values to set your alarm");
+                    Console.WriteLine();
+                    Console.SetCursorPosition(0, 13);
+                    Console.WriteLine("\t\tSelected Sensors: " + sensorsToMonitor);
+                    Console.WriteLine("\t\tRange Type: " + rangeType);
+                    Console.WriteLine("\t\tSensor Threshold: Temperature(" + minMaxThresholdValueTemp + ")");
+                    Console.WriteLine("\t\tTime to Monitor: " + timeToMonitor);
+                    Console.WriteLine();
+
+                    //
+                    //change color of text to red for missing values
+                    if (sensorsToMonitor == "")
                     {
-                        case "left":
-                            currentLightSensorValue = myFinch.getLeftLightSensor();
-                            break;
-
-                        case "right":
-                            currentLightSensorValue = myFinch.getRightLightSensor();
-                            break;
-
-                        case "both":
-                            currentLightSensorValue = (myFinch.getRightLightSensor() + myFinch.getLeftLightSensor()) / 2;
-                            break;
+                        Console.SetCursorPosition(0, 13);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t\tSelected Sensors: " + sensorsToMonitor);
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
                     }
-                    switch (rangeType)
+
+                    if (rangeType == "")
                     {
-                        case "minimum":
-                            if (currentLightSensorValue < minMaxThresholdValue)
-                            {
-                                thresholdExceeded = true;
-                            }
-                            break;
-
-                        case "maximim":
-                            if (currentLightSensorValue > minMaxThresholdValue)
-                            {
-                                thresholdExceeded = true;
-                            }
-                            break;
-
+                        Console.SetCursorPosition(0, 14);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t\tRange Type: " + rangeType);
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
                     }
-                    Console.SetCursorPosition(10, 10);
-                    Console.WriteLine("Time Elasped: " + secondsElasped);
-                    Console.SetCursorPosition(10, 11);
-                    Console.WriteLine("Light Value: " + currentLightSensorValue);
-                    myFinch.wait(1000);
-                    secondsElasped++;
-                }
 
-                if (thresholdExceeded)
-                {
-                    //display sensor reading that triggered alarm.
-                    Console.SetCursorPosition(10, 11);
-                    Console.WriteLine("Light Value: " + currentLightSensorValue);
-
-                    for (int i = 0; i < 5; i++)
+                    if (minMaxThresholdValueTemp == default)
                     {
-                        
                         Console.SetCursorPosition(0, 15);
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("\t\t<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>");
-                        Console.WriteLine("\t\t*                                                          *");
-                        Console.WriteLine("\t\t*                - -                   - -                 *");
-                        Console.WriteLine("\t\t*              -  !  -     ALARM     -  !  -               *");
-                        Console.WriteLine("\t\t*                - -                   - -                 *");
-                        Console.WriteLine("\t\t*                                                          *");
-                        Console.WriteLine("\t\t<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>");
+                        Console.WriteLine("\t\tSensor Threshold: Temperature(" + minMaxThresholdValueTemp + ")");
                         Console.ForegroundColor = ConsoleColor.DarkBlue;
-                        Console.WriteLine();
-                        Console.WriteLine();
-                        Console.WriteLine($"\t* The {rangeType} threshold value of {minMaxThresholdValue} was exceeded by the current light sensor value of {currentLightSensorValue} *");
-                        Console.Beep(900,700);
+                    }
+                    if (timeToMonitor == 0)
+                    {
+                        Console.SetCursorPosition(0, 16);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t\tTime to Monitor: " + timeToMonitor);
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
 
+                    Console.WriteLine();
+                    DisplayMenuPrompt("Alarm System");
+
+                }
+
+            }
+
+            //
+            //
+            //if user seleced "ALL" and is missing input values
+            if (sensorsToMonitor == "all" && allValuesAll == false)
+            {
+
+                if (rangeType == "" || timeToMonitor == default || minMaxThresholdValueTemp == default || minMaxThresholdValue == default)
+                {
+
+                    Console.WriteLine();
+                    Console.WriteLine("\tPlease enter ALL required values to set your alarm");
+                    Console.WriteLine();
+                    Console.SetCursorPosition(0, 13);
+                    Console.WriteLine("\t\tSelected Sensors: " + sensorsToMonitor);
+                    Console.WriteLine("\t\tRange Type: " + rangeType);
+                    Console.WriteLine("\t\tSensor Threshold: Light(" + minMaxThresholdValue + "), Temperature(" + minMaxThresholdValueTemp + ")");
+                    Console.WriteLine("\t\tTime to Monitor: " + timeToMonitor);
+                    Console.WriteLine();
+
+                    //
+                    //change color of text to red for missing values
+                    if (sensorsToMonitor == "")
+                    {
+                        Console.SetCursorPosition(0, 13);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t\tSelected Sensors: " + sensorsToMonitor);
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
+
+                    if (rangeType == "")
+                    {
+                        Console.SetCursorPosition(0, 14);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t\tRange Type: " + rangeType);
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
+
+                    if (minMaxThresholdValue == default || minMaxThresholdValueTemp == default)
+                    {
                         Console.SetCursorPosition(0, 15);
-                        Console.WriteLine("\t\t<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>");
-                        Console.WriteLine("\t\t*                                                          *");
-                        Console.WriteLine("\t\t*                - -                   - -                 *");
-                        Console.WriteLine("\t\t*              -  !  -    WARNING    -  !  -               *");
-                        Console.WriteLine("\t\t*                - -                   - -                 *");
-                        Console.WriteLine("\t\t*                                                          *");
-                        Console.WriteLine("\t\t<*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*><*>");
-                        Console.Beep(300, 700);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t\tSensor Threshold: Light(" + minMaxThresholdValue + "), Temperature(" + minMaxThresholdValueTemp + ")");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
+                    if (timeToMonitor == 0)
+                    {
+                        Console.SetCursorPosition(0, 16);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t\tTime to Monitor: " + timeToMonitor);
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
+
+                    Console.WriteLine();
+                    DisplayMenuPrompt("Alarm System");
+
+                }
+
+                if (sensorsToMonitor == "left" || sensorsToMonitor == "right" || sensorsToMonitor == "both" && allValuesLight == false)
+                {
+
+                    if (rangeType == "" || timeToMonitor == default || minMaxThresholdValue == default)
+                    {
+
+                        Console.WriteLine();
+                        Console.WriteLine("\tPlease enter ALL required values to set your alarm");
+                        Console.WriteLine();
+                        Console.SetCursorPosition(0, 13);
+                        Console.WriteLine("\t\tSelected Sensors: " + sensorsToMonitor);
+                        Console.WriteLine("\t\tRange Type: " + rangeType);
+                        Console.WriteLine("\t\tSensor Threshold: Light(" + minMaxThresholdValue + ")");
+                        Console.WriteLine("\t\tTime to Monitor: " + timeToMonitor);
+                        Console.WriteLine();
+
+                        //
+                        //change color of text to red for missing values
+                        if (sensorsToMonitor == "")
+                        {
+                            Console.SetCursorPosition(0, 13);
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("\t\tSelected Sensors: " + sensorsToMonitor);
+                            Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        }
+
+                        if (rangeType == "")
+                        {
+                            Console.SetCursorPosition(0, 14);
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("\t\tRange Type: " + rangeType);
+                            Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        }
+
+                        if (minMaxThresholdValue == default)
+                        {
+                            Console.SetCursorPosition(0, 15);
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("\t\tSensor Threshold: Light(" + minMaxThresholdValue + ")");
+                            Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        }
+                        if (timeToMonitor == 0)
+                        {
+                            Console.SetCursorPosition(0, 16);
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("\t\tTime to Monitor: " + timeToMonitor);
+                            Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        }
+
+                        Console.WriteLine();
+                        DisplayMenuPrompt("Alarm System");
 
                     }
                 }
-                else
-                {
-                    Console.WriteLine($"\tThe {rangeType} threshold value of {minMaxThresholdValue} was not exceeded");
-                }
+
                 Console.WriteLine("\n");
                 Console.WriteLine("\n");
                 DisplayMenuPrompt("Alarm System");
+
             }
         }
         #endregion
@@ -1112,9 +1612,9 @@ namespace Project_FinchControl
         #region USER PROGRAMMING
 
         /// <summary>
-        /// *****************************************************************
-        /// *                 USER PROGRAMMING MENU                         *
-        /// *****************************************************************
+        /// ***************************************************************
+        /// *                 USER PROGRAMMING MENU                       *
+        /// ***************************************************************
         /// </summary>
         static void UserProgrammingDisplayMenuScreen(Finch myFinch)
         {
@@ -1123,16 +1623,29 @@ namespace Project_FinchControl
             bool quitUserProgramming = false;
             string menuChoice;
 
+            //
+            // tuple to store all three command parameters
+            //
+
+            (int motorSpeed, int ledBrightness, double waitSeconds) commandParameters;
+            commandParameters.motorSpeed = 0;
+            commandParameters.ledBrightness = 0;
+            commandParameters.waitSeconds = 0;
+
+            List<Command> commands = new List<Command>();
+
             do
             {
                 DisplayScreenHeader("User Programming");
 
-                Console.WriteLine("This module is still under development.");
                 Console.WriteLine();
                 //
                 // get user menu choice
                 //
-
+                Console.WriteLine("\ta) Set Command Parameters");
+                Console.WriteLine("\tb) Add Commands");
+                Console.WriteLine("\tc) View Commands");
+                Console.WriteLine("\td) Execute Commands");
                 Console.WriteLine("\tq) Main Menu");
                 Console.Write("\t\tEnter Choice:");
                 menuChoice = Console.ReadLine().ToLower();
@@ -1142,6 +1655,21 @@ namespace Project_FinchControl
                 //
                 switch (menuChoice)
                 {
+                    case "a":
+                        commandParameters = UserProgrammingDisplayGetCommandParameters();
+                        break;
+
+                    case "b":
+                        UserProgrammingDisplayGetFinchCommands(commands);
+                        break;
+
+                    case "c":
+                        UserProgammingDisplayFinchCommands(commands);
+                        break;
+
+                    case "d":
+                        UserProgrammingDisplayExecuteFinchCommands(myFinch, commands, commandParameters);
+                        break;
 
                     case "q":
                         quitUserProgramming = true;
@@ -1155,6 +1683,427 @@ namespace Project_FinchControl
                 }
 
             } while (!quitUserProgramming);
+        }
+        /// <summary>
+        /// ************************************************
+        /// *                EXECUTE COMMANDS              *
+        /// ************************************************ 
+        /// </summary>
+        /// <param name="myFinch"></param>
+        /// <param name="commands"></param>
+        /// <param name="commandParameters"></param>
+        static void UserProgrammingDisplayExecuteFinchCommands(Finch finchRobot, List<Command> commands, (int motorSpeed, int ledBrightness, double waitSeconds) commandParameters)
+        {
+            int motorSpeed = commandParameters.motorSpeed;
+            int ledBrightness = commandParameters.ledBrightness;
+            int waitMilliSeconds = (int)(commandParameters.waitSeconds * 1000);
+            string commandFeedback = "";
+            const int TURNING_MOTOR_SPEED = 100;
+
+            DisplayScreenHeader("Execute Finch Commands");
+
+            Console.WriteLine("\t The Finch robot is ready to execute the list of commands.");
+            DisplayContinuePrompt();
+
+
+            foreach (Command command in commands)
+            {
+                Console.CursorVisible = false;
+                Console.SetCursorPosition(0, 10);
+
+                switch (command)
+                {
+                    case Command.NONE:
+                        break;
+
+                    case Command.MOVEFORWARD:
+                        commandFeedback = Command.MOVEFORWARD.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.setMotors(motorSpeed, motorSpeed);
+                        finchRobot.wait(1000);
+
+                        break;
+
+                    case Command.MOVEBACKWARD:
+                        commandFeedback = Command.MOVEBACKWARD.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.setMotors(-motorSpeed, -motorSpeed);
+                        finchRobot.wait(1000);
+
+                        break;
+
+                    case Command.STOPMOTORS:
+                        commandFeedback = Command.STOPMOTORS.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.setMotors(0, 0);
+                        break;
+
+                    case Command.WAIT:
+                        commandFeedback = Command.WAIT.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.wait(waitMilliSeconds);
+                        break;
+
+                    case Command.TURNRIGHT:
+                        commandFeedback = Command.TURNRIGHT.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.setMotors(TURNING_MOTOR_SPEED, -TURNING_MOTOR_SPEED);
+                        finchRobot.wait(1500);
+                        break;
+
+                    case Command.TURNLEFT:
+                        commandFeedback = Command.TURNRIGHT.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.setMotors(-TURNING_MOTOR_SPEED, TURNING_MOTOR_SPEED);
+                        finchRobot.wait(1500);
+                        break;
+
+                    case Command.LEDON:
+                        commandFeedback = Command.LEDON.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.setLED(ledBrightness, ledBrightness, ledBrightness);
+                        finchRobot.wait(1500);
+                        break;
+
+                    case Command.LEDOFF:
+                        commandFeedback = Command.LEDOFF.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.setLED(0, 0, 0);
+                        finchRobot.wait(1500);
+                        break;
+
+                    case Command.GETTEMPERATURE:
+                        commandFeedback = $"Temperature: {finchRobot.getTemperature():n2}";
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.wait(2500);
+                        break;
+
+                    case Command.GETLIGHTVALUE:
+                        commandFeedback = $"Light Value: {(finchRobot.getRightLightSensor() + finchRobot.getLeftLightSensor()) / 2:n2}";
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        finchRobot.wait(2500);
+                        break;
+
+                    case Command.LIGHTS:
+                        commandFeedback = Command.LIGHTS.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        for (int i = 0; i < 2; i++)
+                        {
+                            finchRobot.setLED(255, 0, 0);
+                            finchRobot.wait(100);
+                            finchRobot.setLED(255, 150, 0);
+                            finchRobot.wait(100);
+                            finchRobot.setLED(0, 255, 0);
+                            finchRobot.wait(100);
+                        }
+                        break;
+
+                    case Command.SING:
+                        commandFeedback = Command.SING.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        PlayRickRollHello(finchRobot);
+                        break;
+
+                    case Command.DANCEPARTY:
+                        commandFeedback = Command.DANCEPARTY.ToString();
+                        Console.Write($"\tExecuting finch command:");
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write($"{commandFeedback}                ");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        BabySharkDanceParty(finchRobot);
+                        break;
+
+                    case Command.DONE:
+                        commandFeedback = Command.DONE.ToString();
+                        break;
+
+                    default:
+                        break;
+
+                }
+
+            }
+            //
+            //adding this to prevent "runnaway finch syndrome"
+            finchRobot.setMotors(0, 0);
+            Console.CursorVisible = true;
+            DisplayMenuPrompt("UserProgramming");
+
+        }
+        /// <summary>
+        /// ************************************************
+        /// *                DISPLAY COMMANDS              *
+        /// ************************************************
+        /// </summary>
+        /// <param name="commands"> list of commands</param>
+        static void UserProgammingDisplayFinchCommands(List<Command> commands)
+        {
+            DisplayScreenHeader("Finch Robot Commands");
+
+            UserProgammingEchoFinchCommands(commands);
+
+            DisplayMenuPrompt("User Programming");
+        }
+
+        /// <summary>
+        /// ************************************************
+        /// *               ECHO COMMANDS                  *
+        /// ************************************************
+        /// </summary>
+        /// <param name="commands"></param>
+        static void UserProgammingEchoFinchCommands(List<Command> commands)
+        {
+            int itemNumber = 1;
+            //
+            //method will display stored user commands
+
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("\t You have entered the following command sequence:");
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine("\t*****************");
+            Console.WriteLine();
+            foreach (Command command in commands)
+            {
+                Console.WriteLine($"\t{itemNumber}: {command}");
+                itemNumber++;
+            }
+            Console.WriteLine();
+            Console.WriteLine("\t*****************");
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+        }
+        /// <summary>
+        /// ************************************************
+        /// *                 GET COMMANDS                 *
+        /// ************************************************
+        /// </summary>
+        /// <param name="commands"></param>
+        static void UserProgrammingDisplayGetFinchCommands(List<Command> commands)
+        {
+            Command command = Command.NONE;
+
+            int userInput;
+            string input;
+
+            DisplayScreenHeader("Finch Robot Commands");
+
+            //
+            // display a list of available commands
+            int commandCount = 1;
+            Console.WriteLine("\t List of Available Commands");
+            Console.WriteLine();
+            Console.WriteLine("\t********************************************************************");
+            Console.WriteLine("\t-                                                                  -");
+            Console.Write("\t-");
+            foreach (string commandName in Enum.GetNames(typeof(Command)))
+            {
+                Console.Write($"- {commandName.ToLower()}  -");
+                if (commandCount % 5 == 0) Console.Write("-\n\t");
+                commandCount++;
+            }
+            Console.WriteLine("\n\t-                                                                  -");
+            Console.WriteLine("\t********************************************************************");
+            Console.WriteLine();
+
+            while (command != Command.DONE)
+            {
+                Console.WriteLine("\t Enter Command:");
+
+                //store user uput for validations
+                input = Console.ReadLine();
+                //
+                //check to see if input is part of the ENUM list
+                if (Enum.TryParse(input.ToUpper(), out command))
+                {
+                    //
+                    //check to see if user entered a number
+                    if (!int.TryParse(input, out userInput))
+                    {
+                        commands.Add(command);
+                    }
+                    //
+                    //display error message if user entered a number. No mumbers allowed!
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t\t*******************************************");
+                        Console.WriteLine("\t\tPlease enter a command from the list above.");
+                        Console.WriteLine("\t\t*******************************************");
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                        Console.WriteLine();
+                    }
+
+                }
+                //
+                //
+                //display error message if user entry is not a valid command
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\t\t*******************************************");
+                    Console.WriteLine("\t\tPlease enter a command from the list above.");
+                    Console.WriteLine("\t\t*******************************************");
+                    Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    Console.WriteLine();
+                }
+            }
+            //
+            //echo commands
+            UserProgammingEchoFinchCommands(commands);
+
+            DisplayMenuPrompt("User Programming");
+        }
+        /// <summary>
+        /// ************************************************
+        /// *                GET PARAMETERS               *
+        /// ************************************************ 
+        /// </summary>
+        /// <returns></returns>
+        static (int motorSpeed, int ledBrightness, double waitSeconds) UserProgrammingDisplayGetCommandParameters()
+        {
+            DisplayScreenHeader("Command Parameters");
+
+            (int motorSpeed, int ledBrightness, double waitSeconds) commandParameters;
+            commandParameters.motorSpeed = 0;
+            commandParameters.ledBrightness = 0;
+            commandParameters.waitSeconds = 0;
+
+
+            bool needMotorSpeed = true;
+            bool needLedBrightness = true;
+            bool needWaitSeconds = true;
+
+            //
+            //
+            //ask user for MOTOR SPEED and validate response
+            while (commandParameters.motorSpeed > 255 || commandParameters.motorSpeed <= 0)
+            {
+                do
+                {
+                    //
+                    //mesage for first loop only. 
+                    if (needMotorSpeed == true)
+                    {
+                        Console.WriteLine("\t Enter MotorSpeed [1 - 255]:");
+                        needMotorSpeed = false;
+                    }
+
+                    //
+                    // message for invalid user response
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("\tPlease Enter a value between[1] and [255]");
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
+
+                } while (!int.TryParse(Console.ReadLine(), out commandParameters.motorSpeed));
+            }
+            //
+            //
+            //ask user for LED BRIGHTNESS and validate response
+            while (commandParameters.ledBrightness > 255 || commandParameters.ledBrightness <= 0)
+            {
+                do
+                {
+                    //
+                    //mesage for first loop only. 
+                    if (needLedBrightness == true)
+                    {
+                        Console.WriteLine("\t Enter LED Brigtness [1 - 255]:");
+                        needLedBrightness = false;
+                    }
+
+                    //
+                    // message for invalid user response
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("\tPlease Enter a value between[1] and [255]");
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
+
+                } while (!int.TryParse(Console.ReadLine(), out commandParameters.ledBrightness) && commandParameters.ledBrightness < 256 && commandParameters.ledBrightness >= 0);
+            }
+            //
+            //
+            // ask user for WAIT in seconds and validate response
+            while (commandParameters.waitSeconds > 10 || commandParameters.waitSeconds <= 0)
+            {
+                do
+                {
+                    //
+                    //mesage for first loop only. 
+                    if (needWaitSeconds == true)
+                    {
+                        Console.WriteLine("\t Enter Wait time in Seconds [1 - 10]:");
+                        needWaitSeconds = false;
+                    }
+
+                    //
+                    // message for invalid user response
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("\tPlease Enter a value between[1] and [10]");
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.DarkBlue;
+                    }
+
+                } while (!double.TryParse(Console.ReadLine(), out commandParameters.waitSeconds) && commandParameters.waitSeconds < 11 && commandParameters.waitSeconds >= 0);
+            }
+            //
+            //echo user input value
+            Console.WriteLine();
+            Console.WriteLine($"\t Motor speed: {commandParameters.motorSpeed}");
+            Console.WriteLine($"\t LED Brightness: { commandParameters.ledBrightness}");
+            Console.WriteLine($"\t Wait command duration:{commandParameters.waitSeconds}");
+
+            DisplayMenuPrompt("User Programming");
+
+            return commandParameters;
         }
         #endregion
 
@@ -1265,9 +2214,9 @@ namespace Project_FinchControl
         }
 
         /// <summary>
-        /// *****************************************************************
-        /// *                     Closing Screen                            *
-        /// *****************************************************************
+        /// *************************************************
+        /// *                CLOSING SCREEN                 *
+        /// *************************************************
         /// </summary>
         static void DisplayClosingScreen()
         {
@@ -1282,7 +2231,9 @@ namespace Project_FinchControl
         }
 
         /// <summary>
-        /// display continue prompt
+        /// ************************************************
+        /// *                CONTINUE PROMPT               *
+        /// ************************************************ 
         /// </summary>
         static void DisplayContinuePrompt()
         {
@@ -1292,7 +2243,9 @@ namespace Project_FinchControl
         }
 
         /// <summary>
-        /// display menu prompt
+        /// ************************************************
+        /// *                 MENU PROMPT                  *
+        /// ************************************************ 
         /// </summary>
         static void DisplayMenuPrompt(string menuName)
         {
@@ -1302,7 +2255,9 @@ namespace Project_FinchControl
         }
 
         /// <summary>
-        /// display screen header
+        /// ************************************************
+        /// *                SCREEN HEADER                 *
+        /// ************************************************ 
         /// </summary>
         static void DisplayScreenHeader(string headerText)
         {
@@ -1312,7 +2267,11 @@ namespace Project_FinchControl
             Console.WriteLine();
         }
 
-        /// Bonus Disconnect Music and Lights
+        /// <summary>
+        /// ************************************************
+        /// *              RICK ROLL GOODBYE               *
+        /// ************************************************ 
+        /// <param name="finchRobot"></param>
         static void PlayRickRollGoodBye(Finch finchRobot)
         {
             finchRobot.setLED(255, 0, 0);
@@ -1387,7 +2346,11 @@ namespace Project_FinchControl
             finchRobot.disConnect();
         }
 
-        /// Bonus Connected Music
+        /// <summary>
+        /// ************************************************
+        /// *                RICK ROLL HELLO               *
+        /// ************************************************ 
+        /// <param name="finchRobot"></param>
         static void PlayRickRollHello(Finch finchRobot)
         {
             finchRobot.setLED(255, 0, 0);
@@ -1430,3 +2393,4 @@ namespace Project_FinchControl
         #endregion
     }
 }
+
