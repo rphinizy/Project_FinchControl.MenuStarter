@@ -11,11 +11,9 @@ using System.Linq;
 
 namespace Project_FinchControl
 {
-
     /// <summary>
     /// User Commands
     /// </summary>
-
     public enum Command
     {
         NONE,
