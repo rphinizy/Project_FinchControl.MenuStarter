@@ -35,9 +35,8 @@ namespace Project_FinchControl
 
     // **************************************************
     //
-    // Title: Finch Control - Menu Starter
-    // Description: Starter solution with the helper methods,
-    //              opening and closing screens, and the menu
+    // Title: Finch Control - Mission 3 Secion 5 
+    // Description: Application to connect, use and program finch robot.
     // Application Type: Console
     // Author: Phinizy, Robin
     // Dated Created: 10/1/2020
@@ -103,7 +102,7 @@ namespace Project_FinchControl
             Console.WriteLine($"\t Current background color: {Console.BackgroundColor}");
             Console.WriteLine();
             Console.WriteLine($"\t Current window width: {Console.WindowWidth}");
-            Console.WriteLine($"\t Current background color: {Console.WindowHeight}");
+            Console.WriteLine($"\t Current window height: {Console.WindowHeight}");
             Console.WriteLine();
             Console.WriteLine();
             Console.WriteLine("\t Would you like to change the current theme settings? Please type [yes] or [no]");
@@ -171,7 +170,7 @@ namespace Project_FinchControl
                         windowWidth = true;
                     }
 
-                    if (windowSizeTuple.windowHeight < 61 && windowSizeTuple.windowHeight > 11)
+                    if (windowSizeTuple.windowHeight < 51 && windowSizeTuple.windowHeight > 11)
                     {
                         windowHeight = true;
                     }
@@ -238,7 +237,7 @@ namespace Project_FinchControl
         }
         /// <summary>
         /// ***************************************
-        /// *         Read from TXTfile           *
+        /// *         Read Color TXTfile           *
         /// ***************************************
         /// </summary>
         static (ConsoleColor foregroundColor, ConsoleColor backgroundColor) ReadThemeTxtFile()
@@ -259,7 +258,7 @@ namespace Project_FinchControl
         }
         /// <summary>
         /// ***************************************
-        /// *         Read from TXTfile           *
+        /// *         Read Size TXTfile           *
         /// ***************************************
         /// </summary>
         static (int windowWidth, int windowHeight) ReadWindowInfoData()
