@@ -7,6 +7,7 @@ using FinchAPI;
 using System.Threading;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
+using System.Linq;
 
 namespace Project_FinchControl
 {
@@ -42,11 +43,10 @@ namespace Project_FinchControl
     // Application Type: Console
     // Author: Phinizy, Robin
     // Dated Created: 10/1/2020
-    // Last Modified: 11/1/2020
+    // Last Modified: 11/7/2020
     //
     // **************************************************
 
-    //public delegate void ThresholdValueTemp(int minMaxThresholdValueTemp);
 
     class Program
     {
@@ -61,19 +61,299 @@ namespace Project_FinchControl
             DisplayWelcomeScreen();
             DisplayMenuScreen();
             DisplayClosingScreen();
+
         }
 
         /// <summary>
-        /// setup the console theme
+        /// ***************************************
+        /// *              Set Theme              *
+        /// ***************************************
         /// </summary>
         static void SetTheme()
         {
-            Console.SetWindowSize(150, 40);
-            Console.ForegroundColor = ConsoleColor.DarkBlue;
 
-            Console.BackgroundColor = ConsoleColor.Gray;
+            (int windowWidth, int windowHeight) windowSizeTuple;
+
+            (ConsoleColor foregroundColor, ConsoleColor backgroundColor) themeSettings;
+
+            bool themeSet = false;
+            bool windowSet = false;
+            bool windowWidth = false;
+            bool windowHeight = false;
+
+            string userResponse;
+            string correct;
+
+            //
+            // get saved data from text file to set the theme
+            //
+            themeSettings = ReadThemeTxtFile();
+            windowSizeTuple = ReadWindowInfoData();
+
+            Console.SetWindowSize(windowSizeTuple.windowWidth, windowSizeTuple.windowHeight);
+            Console.ForegroundColor = themeSettings.foregroundColor;
+            Console.BackgroundColor = themeSettings.backgroundColor;
+            Console.Clear();
+
+
+            DisplayScreenHeader("Set Application Theme");
+
+            Console.WriteLine("\t Welcome to the Finch Control Application. Please Verify Settings");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine($"\t Current foreground color: {Console.ForegroundColor}");
+            Console.WriteLine($"\t Current background color: {Console.BackgroundColor}");
+            Console.WriteLine();
+            Console.WriteLine($"\t Current window width: {Console.WindowWidth}");
+            Console.WriteLine($"\t Current background color: {Console.WindowHeight}");
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("\t Would you like to change the current theme settings? Please type [yes] or [no]");
+            userResponse = Console.ReadLine().ToLower();
+
+            if (userResponse == "yes")
+            {
+                do
+                {
+                    themeSettings.foregroundColor = GetConsoleSettingsFromUser("foreground");
+                    themeSettings.backgroundColor = GetConsoleSettingsFromUser("background");
+
+                    //
+                    //set new theme
+                    //
+                    Console.ForegroundColor = themeSettings.foregroundColor;
+                    Console.BackgroundColor = themeSettings.backgroundColor;
+                    Console.Clear();
+                    DisplayScreenHeader("Set Application Theme");
+                    Console.WriteLine($"\t New forground color: {Console.ForegroundColor}");
+                    Console.WriteLine($"\t New background color: {Console.BackgroundColor}");
+
+                    Console.WriteLine();
+                    Console.WriteLine("\t Are these settings correct?");
+
+              
+                    correct = Console.ReadLine().ToLower();
+
+                    if (correct == "yes")
+                    {
+                        themeSet = true;
+                    }
+
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("\tplease try again");
+                        themeSet = false;
+                    }
+
+                } while (!themeSet);
+            }
+            if (userResponse != "yes" && userResponse != "no")
+            {
+                Console.WriteLine("Please enter a valid response [yes] or [no]");
+                Console.WriteLine();
+                Console.WriteLine("press any key to continue");
+                Console.ReadKey();
+                SetTheme();
+            }
+
+            Console.WriteLine("\t Would you like to change the current window size? Please type [yes] or [no]");
+            userResponse = Console.ReadLine().ToLower();
+
+            if (userResponse == "yes")
+
+            {
+                do
+                {
+                    windowSizeTuple.windowWidth = GetWindowSettingsFromUser("width");
+                    windowSizeTuple.windowHeight = GetWindowSettingsFromUser("height");
+
+                    if (windowSizeTuple.windowWidth < 201 && windowSizeTuple.windowWidth > 51)
+                    {
+                        windowWidth = true;
+                    }
+
+                    if (windowSizeTuple.windowHeight < 61 && windowSizeTuple.windowHeight > 11)
+                    {
+                        windowHeight = true;
+                    }
+                    
+                    if (windowWidth == true && windowHeight == true)
+                    {
+                        //
+                        // set window size
+                        //
+                        Console.SetWindowSize(windowSizeTuple.windowWidth, windowSizeTuple.windowHeight);
+                        Console.Clear();
+                        DisplayScreenHeader("Set Application Window Size");
+                        Console.WriteLine($"\t New Window Size: {Console.WindowWidth},{Console.WindowHeight}");
+
+                        Console.WriteLine();
+                        Console.WriteLine("\t Are these settings correct?");
+                        correct = Console.ReadLine().ToLower();
+
+                        if (correct == "yes")
+                        {
+                            windowSet = true;
+                        }
+
+                        else
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("\tplease try again");
+                            windowSet = false;
+                        }
+                    }
+                    
+                    else
+                    {
+                        Console.WriteLine();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\t Please check your window sizes are within limits. [min/max width: 50/200] , [min/max height: 10/60]");
+                        Console.WriteLine();
+                        Console.WriteLine($"\t You have enetered width: {windowSizeTuple.windowWidth} height: {windowSizeTuple.windowHeight}");
+                        Console.ForegroundColor = themeSettings.foregroundColor;
+                        windowSet = false;
+                        Console.WriteLine();
+                    }
+                    
+                } while (!windowSet);
+            }
+
+            if (userResponse != "yes" && userResponse != "no")
+            {
+                Console.WriteLine("Please enter a valid response [yes] or [no]");
+                Console.WriteLine();
+                Console.WriteLine("press any key to continue");
+                Console.ReadKey();
+                SetTheme();
+            }
+
+            WriteThemeTxtFile(
+                themeSettings.foregroundColor, 
+                themeSettings.backgroundColor, 
+                windowSizeTuple.windowWidth, 
+                windowSizeTuple.windowHeight);
+         
+            DisplayContinuePrompt();
+
         }
+        /// <summary>
+        /// ***************************************
+        /// *         Read from TXTfile           *
+        /// ***************************************
+        /// </summary>
+        static (ConsoleColor foregroundColor, ConsoleColor backgroundColor) ReadThemeTxtFile()
+        {
+            string dataPath = @"Data/theme.txt";
+            string[] themeSettings;
 
+            ConsoleColor foregroundColor;
+            ConsoleColor backgroundColor;
+
+            themeSettings = File.ReadAllLines(dataPath);
+
+            Enum.TryParse(themeSettings[0], true, out foregroundColor);
+            Enum.TryParse(themeSettings[1], true, out backgroundColor);
+
+            return (foregroundColor, backgroundColor);
+
+        }
+        /// <summary>
+        /// ***************************************
+        /// *         Read from TXTfile           *
+        /// ***************************************
+        /// </summary>
+        static (int windowWidth, int windowHeight) ReadWindowInfoData()
+        {
+            string dataPath = @"Data\theme.txt";
+
+            string windowSizeText;
+            string[] windowSizeArray;
+
+            (int windowWidth, int windowHeight) windowSizeTuple;
+
+            windowSizeText = File.ReadLines(dataPath).Skip(2).Take(1).First();
+
+            windowSizeArray = windowSizeText.Split(',');
+
+            int.TryParse(windowSizeArray[0], out windowSizeTuple.windowWidth);
+            int.TryParse(windowSizeArray[1], out windowSizeTuple.windowHeight);
+      
+
+            return windowSizeTuple;
+        }
+        /// <summary>
+        /// ***************************************
+        /// *         Get Color Settings          *
+        /// ***************************************
+        /// </summary>
+        static ConsoleColor GetConsoleSettingsFromUser(string property)
+        {
+            ConsoleColor consoleColor;
+            bool validConsoleColor;
+
+            do
+            {
+                Console.Write($"\t Enter a value for the {property}: ");
+                validConsoleColor = Enum.TryParse<ConsoleColor>(Console.ReadLine(), true, out consoleColor);
+
+                if (!validConsoleColor)
+                {
+                    Console.WriteLine("\n\t***** It appears your entry was not valid. Please try again. *****\n");
+                }
+                else
+                {
+                    validConsoleColor = true;
+                }
+            } while (!validConsoleColor);
+
+            return consoleColor;
+
+        }
+        /// <summary>
+        /// ***************************************
+        /// *         Get Window Settings         *
+        /// ***************************************
+        /// </summary>
+        static int GetWindowSettingsFromUser(string property)
+        {
+            bool validResponse = false;
+            int userResponse;
+
+            do
+            {
+                Console.Write($"\t Enter a value for the {property}: ");
+
+
+                if (!int.TryParse(Console.ReadLine(), out userResponse))
+                {
+                    Console.WriteLine("\n\t***** It appears your entry was not valid. Please try again. *****\n");
+                }
+                else
+                {
+                    validResponse = true;
+                }
+            } while (!validResponse);
+
+            return userResponse;
+        }
+        /// <summary>
+        /// ***************************************
+        /// *          Write to TXTfile           *
+        /// ***************************************
+        /// </summary>
+        static void WriteThemeTxtFile(ConsoleColor foreground, ConsoleColor background, int windowWidth, int windowHeight)
+        {
+            string dataPath = @"Data/theme.txt";
+            string windowInfoText;
+
+            windowInfoText = windowWidth + "," + windowHeight;
+
+            File.WriteAllText(dataPath, foreground.ToString() + "\n");
+            File.AppendAllText(dataPath, background.ToString() + "\n");
+            File.AppendAllText(dataPath, windowInfoText.ToString());
+        }
 
         /// <summary>
         /// *****************************************************************
@@ -103,6 +383,7 @@ namespace Project_FinchControl
                 Console.WriteLine("\te) User Programming");
                 Console.WriteLine("\tf) Disconnect Finch Robot");
                 Console.WriteLine("\tq) Quit");
+                Console.WriteLine("\ts) Settings");
                 Console.Write("\t\tEnter Choice:");
                 menuChoice = Console.ReadLine().ToLower();
 
@@ -139,6 +420,10 @@ namespace Project_FinchControl
                     case "q":
                         DisplayDisconnectFinchRobot(finchRobot);
                         quitApplication = true;
+                        break;
+
+                    case "s":
+                        SetTheme();
                         break;
 
                     default:

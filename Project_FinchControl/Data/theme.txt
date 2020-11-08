@@ -1,0 +1,3 @@
+﻿darkblue
+gray
+150,40
